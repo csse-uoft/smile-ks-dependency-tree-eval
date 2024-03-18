@@ -1,0 +1,36 @@
+name: PyDepTrees
+channels:
+  - anaconda
+  - conda-forge
+  - defaults
+dependencies:
+  - python==3.9
+  - numpy
+  - matplotlib
+  - seaborn
+  - unidecode
+  - nltk
+  - stanfordcorenlp
+  - xlsxwriter
+  - jupyter
+  - pygraphviz
+  - pyvis
+  - urllib3
+  - pandas==1.4.2
+  - networkx
+  - scipy
+  - pip
+  - pip:
+    - pyyaml
+    - graphviz
+    - openpyxl
+    - stanfordcorenlp 
+    - unidecode
+    - SPARQLWrapper==2.0.0
+    - python-dateutil
+    - Werkzeug==2.3.7
+    - git+https://github.com/csse-uoft/owlready2.git
+    - git+https://github.com/csse-uoft/graphdb-importer
+    - git+https://github.com/csse-uoft/py2graphdb
+    - git+https://github.com/csse-uoft/smile-base.git
+

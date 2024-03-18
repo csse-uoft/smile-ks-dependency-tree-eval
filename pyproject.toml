@@ -1,0 +1,47 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "smile_ks_depenency_tree_eval"
+version = "0.0.1"
+description = "Python wrapper for Depenecy Tree evaluation and fix."
+authors = [
+    { name = "Bart Gajderowicz", email = "bgajdero@gmail.com" },
+]
+requires-python = ">=3.9"
+readme = "README.md"
+
+# Requirements: This is done differently by poetry!
+#dependencies = [
+#    "git+https://github.com/csse-uoft/graphdb-importer"
+#]
+
+[project.urls]
+repository = "https://github.com/csse-uoft/smile-ks-depenency-tree-eval"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["smile_ks_depenency_tree_eval", "smile_ks_depenency_tree_eval.*"]
+exclude = ["tests"]
+namespaces = false
+
+[tool.setuptools.package-data]
+"*" = ["*.*"]
+
+[tool.poetry]
+keywords = ['python', 'dependency tree', 'llm', 'syntax tree', 'computational linguistics]
+classifiers= [
+    "Development Status :: 1 - Planning",
+    "Topic :: Database",
+    "Intended Audience :: Education",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3.10",
+    "Environment :: Console",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft :: Windows",
+]
+
