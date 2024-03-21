@@ -1,5 +1,4 @@
 import re, os, tqdm
-from src.smile_ks_dependency_tree_eval.listener import DepTreeFix, DepTreeFix3, DepTreeFix5, Text, Trace, Ks, KSAR, Hypothesis, Program, Dep
 from owlready2 import default_world, ObjectProperty, DataProperty, rdfs, Thing 
 from py2graphdb.config import config as CONFIG
 from py2graphdb.utils.db_utils import resolve_nm_for_dict, PropertyList

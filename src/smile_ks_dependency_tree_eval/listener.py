@@ -5,9 +5,10 @@ from py2graphdb.config import config as CONFIG
 smile = default_world.get_ontology(CONFIG.NM)
 with smile:
     from smile_base.Model.knowledge_source.knowledge_source import KnowledgeSource
-    from src.smile_ks_dependency_tree_eval.utils import add_ks
-
-    from smile_base.Model.data_level.phrase import Dep
+    from smile_ks_dependency_tree_eval.utils import add_ks
+    from smile_base.Model.data_level.word import Word
+    from smile_base.Model.data_level.pos import Pos
+    from smile_base.Model.data_level.dep import Dep
     from smile_base.Model.data_level.text import Text
     from smile_base.Model.data_level.hypothesis import Hypothesis
     from smile_base.Model.controller.ks import Ks
@@ -44,7 +45,7 @@ class DepTreeFix(KnowledgeSource):
     """
 
     CC_WORDS = []
-    with open("src/smile_ks_dependency_tree_eval/libs/scroll/data/cc_words.txt", "r") as f:
+    with open("smile_ks_dependency_tree_eval/libs/scroll/data/cc_words.txt", "r") as f:
         for line in f:
             CC_WORDS.append(line.strip().split(" "))
 
@@ -53,7 +54,7 @@ class DepTreeFix(KnowledgeSource):
         5: "findall([W],(fix5_pattern(W)),L),writeln(L)"
     }
 
-    PL_DIR = "src/smile_ks_dependency_tree_eval/libs/scroll/prolog"
+    PL_DIR = "smile_ks_dependency_tree_eval/libs/scroll/prolog"
 
     def __init__(self, hypothesis_ids, ks_ar, trace):
         fields = [v for v in Ks.ALL_KS_FORMATS.values() if v[0] == self.__class__.__name__][0]

@@ -1,6 +1,6 @@
 import re, os, tqdm
-from src.smile_ks_dependency_tree_eval.dep_tree_fix_listener import DepTreeFix, DepTreeFix3, DepTreeFix5, Text, Trace, Ks, KSAR, Hypothesis, Program, Dep, Word, Pos
-from src.smile_ks_dependency_tree_eval.utils import add_ks
+from smile_ks_dependency_tree_eval.listener import DepTreeFix, DepTreeFix3, DepTreeFix5, Text, Trace, Ks, KSAR, Hypothesis, Dep, Word, Pos
+from smile_ks_dependency_tree_eval.utils import add_ks
 from smile_ks_dependency_tree_eval.libs import nlp_parser
 from owlready2 import default_world, ObjectProperty, DataProperty, rdfs, Thing 
 from py2graphdb.config import config as CONFIG
@@ -20,22 +20,20 @@ def parse(sent):
     return annotation
 
 
-def gen_ksar(inputs:list, output:Hypothesis, py_name:str, trace:Trace):
+def gen_ksar(inputs: list[Dep], trace:Trace, fix_num: int):
     input_klasses = [hypo.klass for hypo in inputs]
-    ks = Ks.search(props={smile.hasPyName:py_name, hasonly(smile.hasInputDataLevels):input_klasses, hasonly(smile.hasOutputDataLevels):output.klass}, how='first')[0]
+    ks = Ks.search(props={smile.hasPyName:f'DepTreeFix{fix_num}', hasall(smile.hasInputDataLevels):input_klasses}, how='first')[0]
     ks_ar = KSAR()
     ks_ar.keep_db_in_synch = False
     ks_ar.ks = ks.id
     ks_ar.trace = trace.id
     ks_ar.cycle = 0
     for hypo in inputs:
-        ks_ar.input_hypotheses = hypo.id
-        hypo.for_ks_ars = ks_ar.inst_id
-
+            ks_ar.input_hypotheses = hypo.id
+            hypo.for_ks_ars = ks_ar.inst_id
     ks_ar.save()
     ks_ar.keep_db_in_synch = True
     return ks_ar
-
 
 smile = default_world.get_ontology(CONFIG.NM)
 with smile:  
@@ -79,11 +77,8 @@ with smile:
             dep = Dep.find_generate(dep=dep, subject_id=subject_word_id, object_id=object_word_id,trace_id=trace.id)
             dep.save()
             hold_deps.append(dep)
-    
-    # TODO: for debugging
-    print(hold_deps)
 
-    ks_ar = gen_ksar(inputs=[Dep], output=Program, trace=trace)
+    ks_ar = gen_ksar(inputs=hold_deps, trace=trace, fix_num = 3)
     ks_ar.ks_status=0
     ks_ar.save()
 
