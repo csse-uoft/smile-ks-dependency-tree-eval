@@ -13,9 +13,7 @@ dependencies:
   - stanfordcorenlp
   - xlsxwriter
   - jupyter
-  - tqdm
   - pygraphviz
-  - rdflib
   - pyvis
   - urllib3
   - pandas==1.4.2
