@@ -151,9 +151,14 @@ class DepTreeFix(KnowledgeSource):
         :return: A tuple containing the processed triple and associated words.
         :rtype: (list, tuple)
         """
-        subject_word = dep.subject_word
-        object_word = dep.object_word
+        # retrieve the id of the related word
+        subject_word_id = dep.subject_word
+        object_word_id = dep.object_word
         relationship = dep.dep
+
+        # find the corresponding word
+        subject_word = Word.get(subject_word_id)
+        object_word = Word.find(object_word_id)
         
         subject_content = subject_word.content
         subject_label = subject_word.content_label
@@ -375,14 +380,18 @@ class DepTreeFix5(DepTreeFix):
         super().set_input(dep_hypos) 
         self.set_words()
 
+    # TODO: change this
     def set_words(self): 
         """
         Set Word hypos based on Dep hypos
         """
         for dep in self.dep_hypos:
-            subject_word = dep.subject_word
-            object_word = dep.object_word
+            subject_word_id = dep.subject_word
+            object_word_id = dep.object_word
 
+            subject_word = Word.get(subject_word_id)
+            object_word = Word.get(object_word_id)
+            
             self.word_hypos[subject_word.content_label] = subject_word
             self.word_hypos[object_word.content_label] = object_word
     
