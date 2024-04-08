@@ -15,6 +15,8 @@ with smile:
     from smile_base.Model.controller.ks_ar import KSAR
     from smile_base.Model.controller.trace import Trace
 
+from smile_ks_dependency_tree_eval.libs import nlp_parser
+
 from py2graphdb.ontology.operators import *
 
 # from nltk.tokenize import sent_tokenize, word_tokenize
@@ -139,7 +141,6 @@ class DepTreeFix(KnowledgeSource):
 
         self.dep_hypos = dep_hypos
         self.set_dep()
-        print(f'This is dep_tripple: {self.dep_triples}')
         self.apply_fix()
     
     @staticmethod
@@ -275,6 +276,8 @@ class DepTreeFix(KnowledgeSource):
             print(f"fix applied: {fix_applied}")
             if fix_applied:
                 self.fix_applied = True
+                ann = nlp_parser.parse(self.description)
+                self.dep_triples = nlp_parser.resolved_to_triples(ann)
             else:
                 fix_needed = False
         self.clean_prolog_files()

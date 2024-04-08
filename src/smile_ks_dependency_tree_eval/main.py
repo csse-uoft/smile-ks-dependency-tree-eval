@@ -16,7 +16,6 @@ def parse(sent):
     ann = nlp_parser.parse(sent)
     annotation["Dep"] = nlp_parser.resolved_to_triples(ann)
     annotation["Word and Pos"] = nlp_parser.get_words(ann)
-
     return annotation
 
 
@@ -43,7 +42,7 @@ with smile:
 
     trace = Trace(keep_db_in_synch=True)
 
-    text = "Mary hugged the boy the girl left."
+    text = "The school insisted on providing documents."
     annotation = parse(text)
 
     hold_deps = []
@@ -78,12 +77,14 @@ with smile:
             dep.save()
             hold_deps.append(dep)
 
-    ks_ar = gen_ksar(inputs=hold_deps, trace=trace, fix_num = 3)
+    ks_ar = gen_ksar(inputs=hold_deps, trace=trace, fix_num = 5)
     ks_ar.ks_status=0
     ks_ar.save()
 
-    ks_ar_3 = DepTreeFix.process_ks_ars(loop=False)
-    ks_ar_3.load()
+    ks_ar_5 = DepTreeFix.process_ks_ars(loop=False)
+    
+    ks_ar_5_loaded = [ks_ar_5.load() for k in ks_ar_5]
+
     outs = [Hypothesis(inst_id=hypo_id).cast_to_graph_type() for hypo_id in ks_ar.hypotheses]
     for out in outs:
         try:
