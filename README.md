@@ -1,5 +1,5 @@
 # smile_ks_qa0
-SMILE Knowledge Source: QA0
+SMILE Knowledge Source: Dep Tree Fix
 
 
 
@@ -48,7 +48,7 @@ This will start a NLP server at [http://localhost:9000](http://localhost:9000). 
 ## To run example
 `conda activate PyDepTrees`
 `cd src`
-`python -m smile_ks_qa0.main`
+`python -m smile_ks_dependency_tree_eval.main`
 
 
 ## To run KnowledgeSource Listener
