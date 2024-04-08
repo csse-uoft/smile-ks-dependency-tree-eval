@@ -54,7 +54,7 @@ class DepTreeFix(KnowledgeSource):
         5: "findall([W],(fix5_pattern(W)),L),writeln(L)"
     }
 
-    PL_DIR = "smile_ks_dependency_tree_eval/libs/scroll/prolog"
+    PL_DIR = "smile_ks_dependency_tree_eval/libs/scroll/prolog/"
 
     def __init__(self, hypothesis_ids, ks_ar, trace):
         fields = [v for v in Ks.ALL_KS_FORMATS.values() if v[0] == self.__class__.__name__][0]
@@ -139,6 +139,7 @@ class DepTreeFix(KnowledgeSource):
 
         self.dep_hypos = dep_hypos
         self.set_dep()
+        print(f'This is dep_tripple: {self.dep_triples}')
         self.apply_fix()
     
     @staticmethod
@@ -162,14 +163,19 @@ class DepTreeFix(KnowledgeSource):
         
         subject_content = subject_word.content
         subject_label = subject_word.content_label
-        subject_pos = subject_word.pos.tag
+        subject_pos_id = subject_word.pos  
+        subject_pos = Pos.get(subject_pos_id)
+        subject_pos_tag = subject_pos.tag
+
         object_content = object_word.content
         object_label = object_word.content_label
-        object_pos = object_word.pos.tag
+        object_pos_id = object_word.pos  
+        object_pos = Pos.get(object_pos_id)
+        object_pos_tag = object_pos.tag
 
-        subject_str = f"{subject_content}-{subject_label}"
-        object_str = f"{object_content}-{object_label}"
-        triple = [[object_str, subject_pos], relationship, [object_str, object_pos]]
+        subject_str = subject_label
+        object_str = object_label
+        triple = [[subject_str, subject_pos_tag], relationship, [object_str, object_pos_tag]]
         words = ((subject_str, subject_content), (object_str, object_content)) ## (('hugged-2','hugged'),('Mary-1', 'Mary'))
         return triple, words
     
@@ -404,8 +410,8 @@ class DepTreeFix5(DepTreeFix):
         if self.fix_applied:
             for triple in self.dep_triples:
                 dep = triple[1]
-                subject_label = triple[0][0].rsplit("-", 1)
-                object_label = triple[2][0].rsplit("-", 1)
+                subject_label = triple[0][0]
+                object_label = triple[2][0]
 
                 subject = self.word_hypos[subject_label]
                 object = self.word_hypos[object_label]
