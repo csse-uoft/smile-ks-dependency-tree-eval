@@ -18,6 +18,8 @@ with smile:
     from smile_base.Model.controller.ks_ar import KSAR
     from smile_base.Model.controller.trace import Trace
 
+from smile_ks_dependency_tree_eval.libs import nlp_parser
+
 from py2graphdb.ontology.operators import *
 
 # from nltk.tokenize import sent_tokenize, word_tokenize
@@ -57,10 +59,12 @@ class DepTreeFix(KnowledgeSource):
         5: "findall([W],(fix5_pattern(W)),L),writeln(L)"
     }
 
-    # TODO: change it back after testing it locally
-    def __init__(self, hypothesis_ids=None, ks_ar=None, trace=None):
-        # fields = [v for v in Ks.ALL_KS_FORMATS.values() if v[0] == self.__class__.__name__][0]
-        # super().__init__(fields[1], fields[2], fields[3], trace, hypothesis_ids, ks_ar)
+    PL_DIR = "smile_ks_dependency_tree_eval/libs/scroll/prolog/"
+
+    def __init__(self, hypothesis_ids, ks_ar, trace):
+        fields = [v for v in Ks.ALL_KS_FORMATS.values() if v[0] == self.__class__.__name__][0]
+        super().__init__(fields[1], fields[2], fields[3], trace, hypothesis_ids, ks_ar)
+
         self.ks_ar = ks_ar
         self.trace = trace
         self.hypothesis_ids = hypothesis_ids
@@ -141,20 +145,40 @@ class DepTreeFix(KnowledgeSource):
         print(self.description) #############
     
     @staticmethod
-    def process_dep(dep: "Dep"): #[['hugged-2', 'VBD'], 'nsubj', ['Mary-1', 'NNP']]
-        subject_word = dep.subject_word
-        object_word = dep.object_word
+    def process_dep(dep):
+        """
+        Processes a single Dep object and constructs a triple representation along with the associated words.
+
+        :param dep: A Dep object representing a dependency relation to be processed.
+        :type dep: Dep
+        :return: A tuple containing the processed triple and associated words.
+        :rtype: (list, tuple)
+        """
+        # retrieve the id of the related word
+        subject_word_id = dep.subject_word
+        object_word_id = dep.object_word
         relationship = dep.dep
+
+        # find the corresponding word
+        subject_word = Word.get(subject_word_id)
+        object_word = Word.get(object_word_id)
         
         subject_content = subject_word.content
-        subject_label = subject_word.label
-        subject_pos = subject_word.pos.tag
-        object_content = object_word.content
-        object_label = object_word.label
-        object_pos = object_word.pos.tag
+        subject_label = subject_word.content_label
+        subject_pos_id = subject_word.pos  
+        subject_pos = Pos.get(subject_pos_id)
+        subject_pos_tag = subject_pos.tag
 
-        triple = [[subject_label, subject_pos], relationship, [object_label, object_pos]]
-        words = ((subject_label, subject_content), (object_label, object_content)) ## (('hugged-2','hugged'),('Mary-1', 'Mary'))
+        object_content = object_word.content
+        object_label = object_word.content_label
+        object_pos_id = object_word.pos  
+        object_pos = Pos.get(object_pos_id)
+        object_pos_tag = object_pos.tag
+
+        subject_str = subject_label
+        object_str = object_label
+        triple = [[subject_str, subject_pos_tag], relationship, [object_str, object_pos_tag]]
+        words = ((subject_str, subject_content), (object_str, object_content)) ## (('hugged-2','hugged'),('Mary-1', 'Mary'))
         return triple, words
     
     def set_dep(self) -> None: 
@@ -234,7 +258,11 @@ class DepTreeFix(KnowledgeSource):
                 line = f.readline().strip()
             fix_applied = self.fix(line)
             print(f"fix applied: {fix_applied}")
-            if not fix_applied:
+            if fix_applied:
+                self.fix_applied = True
+                ann = nlp_parser.parse(self.description)
+                self.dep_triples = nlp_parser.resolved_to_triples(ann)
+            else:
                 fix_needed = False
         self.clean_prolog_files()
     
@@ -322,61 +350,55 @@ class DepTreeFix5(DepTreeFix):
     def __init__(self, hypothesis_ids=None, ks_ar=None, trace=None):
         # fields = [v for v in Ks.ALL_KS_FORMATS.values() if v[0] == self.__class__.__name__][0]
         super().__init__(trace, hypothesis_ids, ks_ar)
+        
+        self.word_hypos = dict()
     
-    def get_outpus(self):
-        # TODO: modify the implementation
-        pass
-        # # a dict to store all word that has been processed
-        # processed_word = {}
+    def set_input(self, dep_hypos):
+        """
+        Extends the parent class's set_input method by adding a set_words step for DepTreeFix5 operation.
 
+        :param dep_hypos: A list of Dep objects representing the dependency hypotheses to be processed.
+        :type dep_hypos: list[Dep]
+        """
+        super().set_input(dep_hypos) 
+        self.set_words()
 
-        # # for tgt, _, src in self.dep_triples:
-        # #     tgt_word = tgt[0]
-        # #     src_word = src[0]
-        # #     tgt_hypo = processed_word.get(tgt_word, None)
-        # #     src_hypo = processed_word.get(src_word, None)
-            
-        # for token in self.annotation["Word and Pos"]:
+    def set_words(self): 
+        """
+        Set Word hypos based on Dep hypos
+        """
+        for dep in self.dep_hypos:
+            subject_word_id = dep.subject_word
+            object_word_id = dep.object_word
 
-        #     certainty = 1
-        #     word = Word.find_generate(
-        #         trace_id=self.trace.id,
-        #         content=token["content"],
-        #         content_label = token["content_label"],
-        #         start=token["start"],
-        #         end=token["end"],
-        #         certainty=certainty)
-        #     word.from_ks_ars = self.ks_ar.id
-        #     self.store_hypotheses.append(word)
-        #     rel_word_queries[token["content_label"]] = word
+            subject_word = Word.get(subject_word_id)
+            object_word = Word.get(object_word_id)
 
-        #     certainty = 1
-        #     pos = Pos.find_generate(word_ids=[word.id], pos_tag=token["pos"],trace_id=self.trace.id, certainty=certainty)
-        #     pos.from_ks_ars = self.ks_ar.id
-        #     word.pos = pos.inst_id
-        #     self.store_hypotheses.append(pos)
+            self.word_hypos[subject_word.content_label] = subject_word
+            self.word_hypos[object_word.content_label] = object_word
+    
+    def get_outputs(self):
+        """
+        Retrieves the processed dependency hypotheses after applying fix 5.
 
-        # for v in self.annotation["Dep"]:
-        #     dep = v[1]
-        #     subject_content_label = v[0][0]
-        #     object_content_label = v[2][0]
-        #     subject_w, subject_i = re.findall(r'(.+)\-([0-9]+)', subject_content_label)[:2][0]
+        :return: A list of output hypotheses generated after processing the dependency fixes.
+        :rtype: list[Hypothesis]
+        """
+        if self.fix_applied:
+            for triple in self.dep_triples:
+                dep = triple[1]
+                subject_label = triple[0][0]
+                object_label = triple[2][0]
 
-        #     if subject_content_label not in rel_word_queries.keys():
-        #         continue
-        #     subject_word_id = rel_word_queries[subject_content_label].id
-            
-        #     object_w, object_i = re.findall(r'(.+)\-([0-9]+)', object_content_label)[:2][0]
-        #     if object_content_label not in rel_word_queries.keys():
-        #         continue
-        #     object_word_id = rel_word_queries[object_content_label].id
+                subject = self.word_hypos[subject_label]
+                object = self.word_hypos[object_label]
 
-        #     certainty = 1
-        #     dep = Dep.find_generate(dep=dep, subject_id=subject_word_id, object_id=object_word_id,trace_id=self.trace.id, certainty=certainty)
-        #     dep.from_ks_ars = self.ks_ar.id
-        #     self.store_hypotheses.append(dep)
-
-        # return self.dep_hypos
+                certainty = 1
+                dep = Dep.find_generate(dep=dep, subject_id=subject.id, object_id=object.id, trace_id=self.trace.id, certainty=certainty)
+                dep.from_ks_ars = self.ks_ar.id
+                self.output_hypos.append(dep)
+        
+        return self.output_hypos
 
     def fix(self, fix_line):
         """
